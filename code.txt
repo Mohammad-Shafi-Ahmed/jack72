@@ -1,0 +1,70 @@
+import pandas as pd 
+from sklearn.linear_model import LinearRegression 
+import matplotlib.pyplot as plt 
+
+df = pd.read_csv("homeprices.csv")
+
+plt.scatter(df.area, df.price, color='red', marker='+')
+plt.xlabel('area(sqft)') 
+plt.ylabel('price(us$)') 
+
+model = LinearRegression()
+model.fit(df[['area']], df.price)
+
+print(f"Prediction for 3300 sqft: {model.predict([[3300]])[0]}")
+print(f"Prediction for 5000 sqft: {model.predict([[5000]])[0]}")
+print(f"Coefficient: {model.coef_[0]}")
+print(f"Intercept: {model.intercept_}")
+print(f"Manual Calculation for 3300 sqft: {135.78767123 * 3300 + 180616.43835616}")
+
+
+
+-----------------------------
+
+
+
+import pandas as pd 
+import numpy as np 
+import matplotlib.pyplot as plt 
+from sklearn.model_selection import train_test_split 
+from sklearn.preprocessing import StandardScaler 
+from sklearn.linear_model import LogisticRegression 
+from sklearn.metrics import confusion_matrix, accuracy_score 
+from matplotlib.colors import ListedColormap 
+
+# Load the dataset and extract features (Age, Salary) and target (Purchased)
+dataset = pd.read_csv("User_Data.csv")
+x = dataset.iloc[:, [2, 3]].values  # Features
+y = dataset.iloc[:, 4].values       # Target
+
+# Split data into training and test sets
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.25, random_state=0)
+
+# Standardize the features
+sc = StandardScaler()
+x_train = sc.fit_transform(x_train)
+x_test = sc.transform(x_test)
+
+# Train logistic regression model
+classifier = LogisticRegression(random_state=0)
+classifier.fit(x_train, y_train)
+
+# Predict test set results
+y_pred = classifier.predict(x_test)
+
+# Evaluate the model
+cm = confusion_matrix(y_test, y_pred)
+print("Confusion Matrix:\n", cm)
+print("Accuracy:", accuracy_score(y_test, y_pred))
+
+# Visualize results
+X1, X2 = np.meshgrid(np.arange(start=x_test[:, 0].min() - 1, stop=x_test[:, 0].max() + 1, step=0.01),
+                     np.arange(start=x_test[:, 1].min() - 1, stop=x_test[:, 1].max() + 1, step=0.01))
+
+plt.contourf(X1, X2, classifier.predict(np.array([X1.ravel(), X2.ravel()]).T).reshape(X1.shape),
+             alpha=0.75, cmap=ListedColormap(('red', 'green')))
+plt.scatter(x_test[:, 0], x_test[:, 1], c=y_test, cmap=ListedColormap(('red', 'green')))
+plt.title('Logistic Regression (Test set)')
+plt.xlabel('Age')
+plt.ylabel('Estimated Salary')
+plt.show()
